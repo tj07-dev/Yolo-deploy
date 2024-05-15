@@ -1364,7 +1364,6 @@ class Detections:
             json_df['box'] = df[['x1', 'y1', 'x2', 'y2']].to_dict(orient='records')
             
             # Add the nutrition data to the 'nutrition' column
-            print("error here")
             json_df['nutrition'] = json_df['name'].apply(lambda x: nutrition_dict.get(x, {}))
             
             # Convert the DataFrame to a list of dictionaries

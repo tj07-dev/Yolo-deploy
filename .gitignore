@@ -160,9 +160,11 @@ cython_debug/
 #.idea/
 artifacts/*
 reseach/*
+Tensorflow-2.x-YOLOV9
 yolov9/bestmodel.pt
 template.zip
 yoloDetection.zip
 yolov9Mod/bestmodel.pt
 yolov9/bestmodel.tflite
 yolov9/best.pt
+bestmodel.onnx

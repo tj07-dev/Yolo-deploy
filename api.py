@@ -2,9 +2,11 @@ import os
 import platform
 import base64
 import pandas as pd
-from fastapi import FastAPI, UploadFile, File, HTTPException, WebSocket
+from fastapi import FastAPI, UploadFile, File, HTTPException, WebSocket 
+from pydantic import BaseModel
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional, Any
 from yoloDetection.pipeline.training_pipeline import TrainPipeline
 from yoloDetection.utils.main_utils import decodeImage, encodeImageIntoBase64
 from yoloDetection.constant.application import APP_HOST, APP_PORT
@@ -16,6 +18,11 @@ import logging
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
+
+class BaseResponse(BaseModel):
+    status: str
+    body: Optional[Any]
+    message: Optional[str]
 
 # Load the model outside the function scope
 model = yolov9Mod.load('./yolov9Mod/bestmodel.pt', device="cpu")
@@ -61,7 +68,7 @@ def home():
     """
     return HTMLResponse(content=content)
 
-@app.post("/predict")
+@app.post("/predict", response_model=BaseResponse)
 async def predict_route(file: UploadFile = File(...)):
     try:
         contents = await file.read()
@@ -75,6 +82,11 @@ async def predict_route(file: UploadFile = File(...)):
         # Perform the prediction
         results = model(image_data)
         json_result = json.loads(results.pandas_to_json())
+
+        # Check for the specific error message
+        if "error" in json_result and json_result["error"] == "No data available in xyxy[0]":
+            return BaseResponse(status="no_detection", message="No product found", body=None)
+
         fruit_names = [fruit['name'] for fruit in json_result]
         fruit_counts = Counter(fruit_names)
         fruit_counts_dict = dict(fruit_counts)
@@ -98,10 +110,11 @@ async def predict_route(file: UploadFile = File(...)):
         # Delete the runs directory
         delete_runs_directory()
 
-        return result
+        return BaseResponse(status="success", message="Product found", body=result)
     except Exception as e:
         logging.error(f"Error during prediction: {e}")
-        return JSONResponse(status_code=500, content={"message": "An error occurred during prediction"})
+        return BaseResponse(status="error", message="An error occurred during prediction",  body=None)
+
 
 @app.websocket("/wspredict")
 async def websocket_endpoint(websocket: WebSocket):
@@ -116,13 +129,18 @@ async def websocket_endpoint(websocket: WebSocket):
             results = model(image_data)
             json_result = json.loads(results.to_json())
 
+            if "error" in json_result and json_result["error"] == "No data available in xyxy[0]":
+                await websocket.send_json({"status":"no_detection", "message":"No product found", "body":None}) 
+
             # Send the prediction result back to the WebSocket client
-            await websocket.send_text(f"Prediction: {json_result}")
+            else :
+                await websocket.send_json({"status":"success", "message":"Product found", "body":json_result})
 
             # Delete the runs directory
             delete_runs_directory()
 
     except Exception as e:
+        await websocket.send_json({"status": "error", "message": f"WebSocket Error: {e}", "body": None})
         logging.error(f"WebSocket Error: {e}")
         await websocket.close()
 
