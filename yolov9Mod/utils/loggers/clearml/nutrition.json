@@ -1,0 +1,152 @@
+[
+    {
+        "Fruit": "Apple",
+        "Calories": 52,
+        "Fat (g)": 0.3,
+        "Carbohydrates (g)": 13.8,
+        "Protein (g)": 0.3,
+        "Fiber (g)": 2.4,
+        "Vitamin C (mg)": 4.6,
+        "Potassium (mg)": 107
+    },
+    {
+        "Fruit": "Banana",
+        "Calories": 105,
+        "Fat (g)": 0.3,
+        "Carbohydrates (g)": 22.8,
+        "Protein (g)": 1.1,
+        "Fiber (g)": 2.6,
+        "Vitamin C (mg)": 8.7,
+        "Potassium (mg)": 422
+    },
+    {
+        "Fruit": "Coconut",
+        "Calories": 257,
+        "Fat (g)": 26,
+        "Carbohydrates (g)": 5.8,
+        "Protein (g)": 2.4,
+        "Fiber (g)": 9,
+        "Vitamin C (mg)": 11.5,
+        "Potassium (mg)": 242
+    },
+    {
+        "Fruit": "Cucumber",
+        "Calories": 15,
+        "Fat (g)": 0.1,
+        "Carbohydrates (g)": 3.6,
+        "Protein (g)": 0.7,
+        "Fiber (g)": 0.5,
+        "Vitamin C (mg)": 2,
+        "Potassium (mg)": 136
+    },
+    {
+        "Fruit": "Grape",
+        "Calories": 62,
+        "Fat (g)": 0.2,
+        "Carbohydrates (g)": 16.6,
+        "Protein (g)": 0.6,
+        "Fiber (g)": 1.4,
+        "Vitamin C (mg)": 5.2,
+        "Potassium (mg)": 195
+    },
+    {
+        "Fruit": "Grapefruit",
+        "Calories": 61,
+        "Fat (g)": 0.2,
+        "Carbohydrates (g)": 9.4,
+        "Protein (g)": 0.8,
+        "Fiber (g)": 2.2,
+        "Vitamin C (mg)": 53.2,
+        "Potassium (mg)": 181
+    },
+    {
+        "Fruit": "Lemon",
+        "Calories": 29,
+        "Fat (g)": 0.1,
+        "Carbohydrates (g)": 2.4,
+        "Protein (g)": 0.9,
+        "Fiber (g)": 2.4,
+        "Vitamin C (mg)": 44.5,
+        "Potassium (mg)": 116
+    },
+    {
+        "Fruit": "Mango",
+        "Calories": 67,
+        "Fat (g)": 0.6,
+        "Carbohydrates (g)": 14,
+        "Protein (g)": 1.5,
+        "Fiber (g)": 1.6,
+        "Vitamin C (mg)": 36.4,
+        "Potassium (mg)": 105
+    },
+    {
+        "Fruit": "Orange",
+        "Calories": 47,
+        "Fat (g)": 0.2,
+        "Carbohydrates (g)": 9.2,
+        "Protein (g)": 0.9,
+        "Fiber (g)": 2.4,
+        "Vitamin C (mg)": 53.2,
+        "Potassium (mg)": 181
+    },
+    {
+        "Fruit": "Peach",
+        "Calories": 56,
+        "Fat (g)": 0.3,
+        "Carbohydrates (g)": 9.9,
+        "Protein (g)": 1.2,
+        "Fiber (g)": 1.5,
+        "Vitamin C (mg)": 8.7,
+        "Potassium (mg)": 107
+    },
+    {
+        "Fruit": "Pear",
+        "Calories": 58,
+        "Fat (g)": 0.4,
+        "Carbohydrates (g)": 10.5,
+        "Protein (g)": 0.4,
+        "Fiber (g)": 3.1,
+        "Vitamin C (mg)": 9.3,
+        "Potassium (mg)": 104
+    },
+    {
+        "Fruit": "Pineapple",
+        "Calories": 52,
+        "Fat (g)": 0.2,
+        "Carbohydrates (g)": 13.1,
+        "Protein (g)": 0.9,
+        "Fiber (g)": 2.3,
+        "Vitamin C (mg)": 78.9,
+        "Potassium (mg)": 104
+    },
+    {
+        "Fruit": "Pomegranate",
+        "Calories": 72,
+        "Fat (g)": 1.2,
+        "Carbohydrates (g)": 14.4,
+        "Protein (g)": 1.8,
+        "Fiber (g)": 5.3,
+        "Vitamin C (mg)": 18.7,
+        "Potassium (mg)": 236
+    },
+    {
+        "Fruit": "Strawberry",
+        "Calories": 33,
+        "Fat (g)": 0.3,
+        "Carbohydrates (g)": 7,
+        "Protein (g)": 1,
+        "Fiber (g)": 2,
+        "Vitamin C (mg)": 89,
+        "Potassium (mg)": 102
+    },
+    {
+        "Fruit": "Watermelon",
+        "Calories": 47,
+        "Fat (g)": 0.4,
+        "Carbohydrates (g)": 8.3,
+        "Protein (g)": 0.6,
+        "Fiber (g)": 0.4,
+        "Vitamin C (mg)": 8,
+        "Potassium (mg)": 232
+    }
+]

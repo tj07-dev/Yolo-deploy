@@ -1,0 +1,28 @@
+description: 'Ultralytics best model '
+author: Ultralytics
+date: '2024-04-23T13:19:26.618279'
+version: 8.2.2
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 1
+imgsz:
+- 640
+- 640
+names:
+  0: Apple
+  1: Banana
+  2: Coconut
+  3: Cucumber
+  4: Grape
+  5: Grapefruit
+  6: Lemon
+  7: Mango
+  8: Orange
+  9: Peach
+  10: Pear
+  11: Pineapple
+  12: Pomegranate
+  13: Strawberry
+  14: Watermelon

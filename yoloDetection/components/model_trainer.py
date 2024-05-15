@@ -37,7 +37,9 @@ class ModelTrainer:
             with open(f'yolov9/models/custom_{model_config_file_name}.yaml', 'w') as f:
                 yaml.dump(config, f)
 
+
             os.system(f"cd yolov9/ && python train.py --img 416 --batch {self.model_trainer_config.batch_size} --epochs {self.model_trainer_config.no_epochs} --data ../data.yaml --cfg ./models/custom_yolov9s.yaml --weights {self.model_trainer_config.weight_name} --name yolov9s_results  --cache")
+            
             os.system("cp yolov9/runs/train/yolov9s_results/weights/best.pt yolov9/")
             os.makedirs(self.model_trainer_config.model_trainer_dir, exist_ok=True)
             os.system(f"cp yolov9/runs/train/yolov9s_results/weights/best.pt {self.model_trainer_config.model_trainer_dir}/")

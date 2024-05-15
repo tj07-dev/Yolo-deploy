@@ -17,6 +17,9 @@
 
 ```bash
 pip install -r requirements.txt
+pip install fastapi
+pip install 'uvicorn[standard]'
+uvicorn api:app --reload
 ```
 
 ```bash

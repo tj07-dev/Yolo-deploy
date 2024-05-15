@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>Web App</title>
+	<title>Fruit Detection using YOLO</title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
 		integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	<style>
@@ -54,8 +54,8 @@
 		.upload-image {
 			/* margin-left: 20px; */
 			height: 400px;
-			width: auto;
-			;
+			width: 100%;
+
 			padding: 5px;
 			margin: 0px auto;
 			overflow: auto;
@@ -88,9 +88,10 @@
 		input[type="text"],
 		input[type="url"],
 		.uneditable-input {
-			border: 1px solid #363e75;
+			border: 1px solid #14172f;
 			outline: 0 !important;
-			border-radius: 0px;
+			border-radius: 2px;
+			margin: 10px 0;
 			box-shadow: none;
 			-webkit-box-shadow: none;
 			-moz-box-shadow: none;
@@ -106,9 +107,9 @@
 		.custom-select:focus,
 		input[type="text"]:focus,
 		.uneditable-input:focus {
-			border: 1px solid #007bff;
+			border: 1px solid #14172f;
 			outline: 0 !important;
-			border-radius: 0px;
+			border-radius: 2px;
 			box-shadow: none;
 			-webkit-box-shadow: none;
 			-moz-box-shadow: none;
@@ -121,15 +122,16 @@
 			left: 0px;
 			top: 0px;
 			width: 100%;
+
 			height: 100%;
 			z-index: 9999999999;
 			overflow: hidden;
-			background: rgba(255, 255, 255, 0.7);
+			background: rgba(0, 0, 0, 0.7);
 		}
 
 		.loader {
-			border: 8px solid #f3f3f3;
-			border-top: 8px solid #363e75;
+			border: 8px solid #ffffff;
+			border-top: 8px solid #1b2d6b;
 			border-radius: 50%;
 			width: 60px;
 			height: 60px;
@@ -165,104 +167,92 @@
 			margin-bottom: 30px;
 		}
 	</style>
+
 </head>
 
 <body>
-	<!-- <div class="main container">
-		<section class="iupload">
-			<h3 class="text-center py-4">Object Detection Using TFOD</h3>
-			<div class="row">
-				<div class="img-part col-md-6">
-					<div class="image-part">
-						<video autoplay id="video"
-							poster="https://img.freepik.com/free-vector/group-young-people-posing-photo_52683-18824.jpg?size=338&ext=jpg"></video>
-						<img src="" id="photo">
-						<canvas style="display:none;" id="canvas"></canvas>
-					</div>
-				</div>
-				<div class="col-md-6 col-xs-12 right-part">
-					<h5 class="mb-2">
-						Prediction Results
-					</h5>
-					<div class="row">
-						<div class="res-part2 col-md-2 col-xs-12"></div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		
-	</div> -->
 
 	<!-- Header -->
-	<header class="bg-primary text-center py-5 mb-4">
+	<header class=" text-center py-5 mb-4" style="background-color: #14172f;">
 		<div class="container">
-			<h1 class="font-weight-light text-white">Fruit Detection using YOLO</h1>
+			<h1 class="font-weight-light text-white">YOLO DEMONSTRATION</h1>
 		</div>
 	</header>
 
-	<!-- Page Content -->
 	<div class="container">
 
-
-		<form class="input-group upload-data row">
-			<div class="col-xl-6 col-md-6 col-sm-6">
-				<button type="button" class="btn btn-primary col-12" id="uload">Upload</button>
+		<!-- Image upload form -->
+		<form class="input-group upload-data row ">
+			<div class="col-xl-6 col-md-6 col-sm-6 ">
+				<button type="button" class="btn btn-primary col-12" id="uploadBtn"
+					style="background-color: #14172f;">Upload</button>
 			</div>
 			<div class="col-xl-6 col-md-6 col-sm-6">
-				<button id="send" type="button" class="btn btn-success col-12">Predict</button>
+				<button id="predictBtn" type="button" class="btn btn-success col-12"
+					style="background-color: rgb(37, 212, 154); color: black;">Predict</button>
 			</div>
-
-			<!-- change url value  -->
-
-			<input type="hidden" class="form-control mr-2" id="url" placeholder="Enter REST Api url..."
+			<input type="hidden" class="form-control mr-2" id="apiUrl" placeholder="Enter REST API url..."
 				value="../predict" />
-			<input name="upload" type="file" id="fileinput"
+			<input name="upload" type="file" id="fileInput"
 				style="position:absolute;top:-500px; display: none;" /><br />
 		</form>
 
 		<div class="row">
-			<!-- Team Member 1 -->
+			<!-- Uploaded image display -->
 			<div class="col-xl-6 col-md-6 col-sm-6 mb-6">
 				<div class="card border-0 shadow upload-image ">
-					<!-- <img src="https://source.unsplash.com/TMgQMXoglsM/500x350" class="card-img-top" alt="..."> -->
-					<video autoplay id="video"
-						poster="https://img.freepik.com/free-vector/group-young-people-posing-photo_52683-18824.jpg?size=338&ext=jpg"></video>
+					<video autoplay id="video"></video>
 					<img src="" class="" id="photo">
 					<canvas style="display:none;" id="canvas"></canvas>
-					<!-- <div class="card-body text-center">
-			<h5 class="card-title mb-0">Team Member</h5>
-		  </div> -->
 				</div>
 			</div>
-			<!-- Team Member 2 -->
+			<!-- Prediction results display -->
 			<div class="col-xl-6 col-md-6 col-sm-6 mb-6">
-				<div class="card border-0 shadow res-part2">
+				<div class="card border-0 shadow res-part2 res-part">
 					<div class="card-body text-center">
-						<h5 class="card-title mb-0">Prediction Results</h5>
+						<h5 class="card-title mb-0">Prediction results appears here!</h5>
 					</div>
 				</div>
 			</div>
 		</div>
-		<!-- /.row -->
 
-
+		<!-- Fruit detection table -->
+		<div id="fruitTable" class="row">
+			<div class="col-md-12">
+				<h4>Nutrition Values</h4>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Fruit</th>
+							<th>Calories</th>
+							<th>Fat (g)</th>
+							<th>Carbohydrates (g)</th>
+							<th>Protein (g)</th>
+							<th>Fiber (g)</th>
+							<th>Vitamin C (mg)</th>
+							<th>Potassium (mg)</th>
+							<th>Quantity</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
 	</div>
-	<!-- /.container -->
 
-	<img class="logo" src="https://apparel.ineuronvision.com/static/logo.png" />
-
-
+	<!-- Loading spinner -->
 	<div id="loading">
 		<div class="loader"></div>
 	</div>
+
+	<!-- Bootstrap and jQuery scripts -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-		integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous">
-		</script>
+		integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+		crossorigin="anonymous"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-		integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous">
-		</script>
+		integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+		crossorigin="anonymous"></script>
 
 	<script>
 		var mybtn = document.getElementById('startbtn');
@@ -271,57 +261,82 @@
 		var myphoto = document.getElementById('photo');
 		var base_data = "";
 
+		$("#loading").hide();
+		$("#fruitTable").hide();
 		function sendRequest (base64Data) {
-			var type = "json";
-			if (base64Data != "" || base64Data != null) {
-				if (type == "imgtobase") {
+			var url = $("#apiUrl").val();
+			$("#loading").show();
+			$.ajax({
+				url: url,
+				type: "post",
+				cache: false,
+				async: true,
+				crossDomain: true,
+				headers: {
+					'Content-Type': 'application/json',
+					'Access-Control-Allow-Origin': '*'
+				},
+				// contentType: "application/json", // Set Content-Type header
+				data: JSON.stringify({
+					image: base64Data
+				}),
+				success: function (res) {
+					$("#loading").hide(); // Hide loader on error
 					$(".res-part").html("");
-					$(".res-part").html(base64Data);
-				} else if (type == "basetoimg") {
-					var imageData = $("#imgstring").val();
-					$(".res-part").html("");
-					$(".res-part").append("<img src='data:image/jpeg;base64," + imageData + "' alt='' />");
-				} else {
-					var url = $("#url").val();
-					$("#loading").show();
-					$.ajax({
-						url: url,
-						type: "post",
-						cache: false,
-						async: true,
-						crossDomain: true,
-						headers: {
-							'Content-Type': 'application/json',
-							'Access-Control-Allow-Origin': '*'
-						},
-						data: JSON.stringify({
-							image: base64Data
-						}),
-						success: function (res) {
-							$(".res-part").html("");
-							$(".res-part2").html("");
-							var imageData = res.image;
-							$(".res-part2").append("<img class='resp-img' src='data:image/jpeg;base64," +
-								imageData + "' alt='' />");
-							// $(".res-part").html("<pre>" + JSON.stringify(res[0], undefined, 2) + "</pre>");
-							$("#loading").hide();
-						}
-					});
+					$(".res-part2").html("");
+					var imageData = res.image;
+					$(".res-part2").append("<img class='resp-img' src='data:image/jpeg;base64," +
+						imageData + "' alt='' />");
+					// Hide loader on success
+					console.log(res);
+					displayFruitTable(res.detection);
+				},
+				error: function (error) {
+					console.error("Error occurred:", error);
+					$("#loading").hide(); // Hide loader on error
+					// Optionally, you can add error handling logic here
 				}
-			}
+			});
 		}
 
+		// Function to display fruit detection results in a table
+		function displayFruitTable (fruitData) {
+			$("#fruitTable").show();
+			var tableBody = $("#fruitTable tbody");
+			tableBody.empty(); // Clear existing content
+
+
+			fruitData.forEach(function (fruit) {
+				var row = $("<tr>").appendTo(tableBody);
+				$("<td>").text(fruit.Fruit || 'N/A').appendTo(row);
+				$("<td>").text(fruit.Calories || 'N/A').appendTo(row);
+				$("<td>").text(fruit["Fat (g)"] || 'N/A').appendTo(row);
+				$("<td>").text(fruit["Carbohydrates (g)"] || 'N/A').appendTo(row);
+				$("<td>").text(fruit["Protein (g)"] || 'N/A').appendTo(row);
+				$("<td>").text(fruit["Fiber (g)"] || 'N/A').appendTo(row);
+				$("<td>").text(fruit["Vitamin C (mg)"] || 'N/A').appendTo(row);
+				$("<td>").text(fruit["Potassium (mg)"] || 'N/A').appendTo(row);
+				$("<td>").text(fruit.Quantity || 'N/A').appendTo(row);
+			});
+		}
+
+
 		$(document).ready(function () {
-			$("#loading").hide();
+			// Function to send image data to the server for prediction
+			// Upload image button click handler
 
-			$('#send').click(function (evt) {
-				sendRequest(base_data);
+
+			$('#uploadBtn').click(function () {
+				$('#fileInput').focus().trigger('click');
 			});
 
-			$('#uload').click(function (evt) {
-				$('#fileinput').focus().trigger('click');
+			// Predict button click handler
+			$('#predictBtn').click(function () {
+				sendRequest(base64Data);
 			});
-			$("#fileinput").change(function () {
+
+			// Handle file input change event
+			$("#fileInput").change(function () {
 				if (this.files && this.files[0]) {
 					var reader = new FileReader();
 					reader.onload = function (e) {
@@ -334,7 +349,7 @@
 							canvas.height = this.height;
 							canvas.width = this.width;
 							ctx.drawImage(this, 0, 0);
-							base_data = canvas.toDataURL('image/jpeg', 1.0).replace(
+							base64Data = canvas.toDataURL('image/jpeg', 1.0).replace(
 								/^data:image.+;base64,/, '');
 							canvas = null;
 						};
@@ -348,6 +363,7 @@
 			});
 		});
 	</script>
+
 </body>
 
 </html>

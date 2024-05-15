@@ -558,8 +558,97 @@ class Silence(nn.Module):
         return x
 
 
-##### GELAN #####        
-        
+##### GELAN #####   
+# 
+class CrossConv(nn.Module):
+    # Cross Convolution Downsample
+    def __init__(self, c1, c2, k=3, s=1, g=1, e=1.0, shortcut=False):
+        """
+        Initializes CrossConv with downsampling, expanding, and optionally shortcutting; `c1` input, `c2` output
+        channels.
+
+        Inputs are ch_in, ch_out, kernel, stride, groups, expansion, shortcut.
+        """
+        super().__init__()
+        c_ = int(c2 * e)  # hidden channels
+        self.cv1 = Conv(c1, c_, (1, k), (1, s))
+        self.cv2 = Conv(c_, c2, (k, 1), (s, 1), g=g)
+        self.add = shortcut and c1 == c2
+
+class Focus(nn.Module):
+    # Focus wh information into c-space
+    def __init__(self, c1, c2, k=1, s=1, p=None, g=1, act=True):
+        """Initializes Focus module to concentrate width-height info into channel space with configurable convolution
+        parameters.
+        """
+        super().__init__()
+        self.conv = Conv(c1 * 4, c2, k, s, p, g, act=act)
+        # self.contract = Contract(gain=2)
+
+    def forward(self, x):
+        """Processes input through Focus mechanism, reshaping (b,c,w,h) to (b,4c,w/2,h/2) then applies convolution."""
+        return self.conv(torch.cat((x[..., ::2, ::2], x[..., 1::2, ::2], x[..., ::2, 1::2], x[..., 1::2, 1::2]), 1))
+        # return self.conv(self.contract(x))       
+
+class C3(nn.Module):
+    # CSP Bottleneck with 3 convolutions
+    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
+        """Initializes C3 module with options for channel count, bottleneck repetition, shortcut usage, group
+        convolutions, and expansion.
+        """
+        super().__init__()
+        c_ = int(c2 * e)  # hidden channels
+        self.cv1 = Conv(c1, c_, 1, 1)
+        self.cv2 = Conv(c1, c_, 1, 1)
+        self.cv3 = Conv(2 * c_, c2, 1)  # optional act=FReLU(c2)
+        self.m = nn.Sequential(*(Bottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
+
+    def forward(self, x):
+        """Performs forward propagation using concatenated outputs from two convolutions and a Bottleneck sequence."""
+        return self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), 1))
+
+class C3x(C3):
+    # C3 module with cross-convolutions
+    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
+        """Initializes C3x module with cross-convolutions, extending C3 with customizable channel dimensions, groups,
+        and expansion.
+        """
+        super().__init__(c1, c2, n, shortcut, g, e)
+        c_ = int(c2 * e)
+        self.m = nn.Sequential(*(CrossConv(c_, c_, 3, 1, g, 1.0, shortcut) for _ in range(n)))
+
+
+class C3TR(C3):
+    # C3 module with TransformerBlock()
+    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
+        """Initializes C3 module with TransformerBlock for enhanced feature extraction, accepts channel sizes, shortcut
+        config, group, and expansion.
+        """
+        super().__init__(c1, c2, n, shortcut, g, e)
+        c_ = int(c2 * e)
+        self.m = TransformerBlock(c_, c_, 4, n)
+
+
+class C3SPP(C3):
+    # C3 module with SPP()
+    def __init__(self, c1, c2, k=(5, 9, 13), n=1, shortcut=True, g=1, e=0.5):
+        """Initializes a C3 module with SPP layer for advanced spatial feature extraction, given channel sizes, kernel
+        sizes, shortcut, group, and expansion ratio.
+        """
+        super().__init__(c1, c2, n, shortcut, g, e)
+        c_ = int(c2 * e)
+        self.m = SPP(c_, c_, k)
+
+
+class C3Ghost(C3):
+    # C3 module with GhostBottleneck()
+    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
+        """Initializes YOLOv5's C3 module with Ghost Bottlenecks for efficient feature extraction."""
+        super().__init__(c1, c2, n, shortcut, g, e)
+        c_ = int(c2 * e)  # hidden channels
+        self.m = nn.Sequential(*(GhostBottleneck(c_, c_) for _ in range(n)))
+
+
 class SPPELAN(nn.Module):
     # spp-elan
     def __init__(self, c1, c2, c3):  # ch_in, ch_out, number, shortcut, groups, expansion
@@ -668,8 +757,8 @@ class DetectMultiBackend(nn.Module):
         #   TensorFlow Lite:                *.tflite
         #   TensorFlow Edge TPU:            *_edgetpu.tflite
         #   PaddlePaddle:                   *_paddle_model
-        from models.experimental import attempt_download, attempt_load  # scoped to avoid circular import
-
+        from models.experimental import  attempt_load  # scoped to avoid circular import
+        from utils.downloads import attempt_download
         super().__init__()
         w = str(weights[0] if isinstance(weights, list) else weights)
         pt, jit, onnx, onnx_end2end, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle, triton = self._model_type(w)
@@ -1078,7 +1167,7 @@ class Detections:
         self.t = tuple(x.t / self.n * 1E3 for x in times)  # timestamps (ms)
         self.s = tuple(shape)  # inference BCHW shape
 
-    def _run(self, pprint=False, show=False, save=False, crop=False, render=False, labels=True, save_dir=Path('')):
+    def _run(self, pprint=False, show=False, save=False, crop=False, render=False, labels=True, save_dir=Path('../')):
         s, crops = '', []
         for i, (im, pred) in enumerate(zip(self.ims, self.pred)):
             s += f'\nimage {i + 1}/{len(self.pred)}: {im.shape[0]}x{im.shape[1]} '  # string
@@ -1129,6 +1218,7 @@ class Detections:
 
     def save(self, labels=True, save_dir='runs/detect/exp', exist_ok=False):
         save_dir = increment_path(save_dir, exist_ok, mkdir=True)  # increment save_dir
+        print(save_dir)
         self._run(save=True, labels=labels, save_dir=save_dir)  # save results
 
     def crop(self, save=True, save_dir='runs/detect/exp', exist_ok=False):

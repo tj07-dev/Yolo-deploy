@@ -58,6 +58,8 @@ seaborn>=0.11.0
 # tensorflow>=2.4.0  # TF exports (-cpu, -aarch64, -macos)
 # tensorflowjs>=3.9.0  # TF.js export
 # openvino-dev  # OpenVINO export
+tensorflow>=2.4.1
+tensorflowjs>=3.9.0
 
 # Deploy ----------------------------------------------------------------------
 setuptools>=65.5.1 # Snyk vulnerability fix

@@ -424,7 +424,7 @@ def parse_model(d, ch, model, imgsz):  # model_dict, input_channels(3)
 
 class TFModel:
     # TF YOLO model
-    def __init__(self, cfg='yolo.yaml', ch=3, nc=None, model=None, imgsz=(640, 640)):  # model, channels, classes
+    def __init__(self, cfg='./detect/gelan-c.yaml', ch=3, nc=None, model=None, imgsz=(640, 640)):  # model, channels, classes
         super().__init__()
         if isinstance(cfg, dict):
             self.yaml = cfg  # model dict
