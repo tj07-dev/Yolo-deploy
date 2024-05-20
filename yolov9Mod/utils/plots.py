@@ -4,7 +4,8 @@ import os
 from copy import copy
 from pathlib import Path
 from urllib.error import URLError
-
+import base64
+import io
 import cv2
 import matplotlib
 import matplotlib.pyplot as plt
@@ -195,6 +196,23 @@ class Annotator:
         return np.asarray(self.im)
 
 
+    def result_base64(self):
+        if isinstance(self.im, np.ndarray):
+            image = Image.fromarray(self.im.astype(np.uint8))
+        else:
+            image = self.im
+
+        # Check if the image is a PIL Image object
+        if not isinstance(image, Image.Image):
+            raise ValueError("Input should be a PIL Image object or a NumPy array.")
+        # Create an in-memory buffer
+        buffer = io.BytesIO()
+        # Save the PIL Image to the buffer in the specified format
+        image.save(buffer, format="jpeg")
+        # Encode the image data as Base64
+        image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        return image_base64 
+
 def feature_visualization(x, module_type, stage, n=32, save_dir=Path('runs/detect/exp')):
     """
     x:              Features to be visualized
@@ -221,7 +239,6 @@ def feature_visualization(x, module_type, stage, n=32, save_dir=Path('runs/detec
             plt.savefig(f, dpi=300, bbox_inches='tight')
             plt.close()
             np.save(str(f.with_suffix('.npy')), x[0].cpu().numpy())  # npy save
-
 
 def hist2d(x, y, n=100):
     # 2d histogram used in labels.png and evolve.png

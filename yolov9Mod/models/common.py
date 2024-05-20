@@ -12,7 +12,7 @@ import zipfile
 from collections import OrderedDict, namedtuple
 from copy import copy
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 from urllib.parse import urlparse
 
 import cv2
@@ -1181,9 +1181,11 @@ class AutoShape(nn.Module):
 
 
 class Detections:
+
+    annoted_image=""
     
     # YOLO detections class for inference results
-    def __init__(self, ims, pred, files, times=(0, 0, 0), names=None, shape=None, im:Image.Image= None):
+    def __init__(self, ims, pred, files, times=(0, 0, 0), names=None, shape=None,save_np:Any=True):
         super().__init__()
         d = pred[0].device  # device
         gn = [
@@ -1201,10 +1203,11 @@ class Detections:
         self.n = len(self.pred)  # number of images (batch size)
         self.t = tuple(x.t / self.n * 1E3 for x in times)  # timestamps (ms)
         self.s = tuple(shape)  # inference BCHW shape
-        self.temp = im
+        self.temp = ""
 
+    
     def _run(
-        self, pprint=False, show=False, save=True, crop=False, render=False, labels=True, save_dir=Path("../")):
+        self, pprint=False, show=False, save=True, crop=False, render=False, labels=True, save_dir=Path("../"), save_np=True):
         s, crops = '', []
         for i, (im, pred) in enumerate(zip(self.ims, self.pred)):
             s += f'\nimage {i + 1}/{len(self.pred)}: {im.shape[0]}x{im.shape[1]} '  # string
@@ -1215,12 +1218,10 @@ class Detections:
                     s += f"{n} {self.names[int(c)]}{'s' * (n > 1)},"  # add to string
                 s = s.rstrip(', ')
                 
-                if show or save or render or crop:
-                    LOGGER.info("1214 "  )
+                if show or save or render or crop or save_np:
                     annotator = Annotator(im, example=str(self.names))
                     for *box,  cls in reversed(pred):  # xyxy, confidence, class
                         label = f'{self.names[int(cls)]}'
-                        LOGGER.info(f"1218  {label}"   ) 
                         if crop:
                             file = save_dir / 'crops' / self.names[int(cls)] / self.files[i] if save else None
                             crops.append({
@@ -1233,18 +1234,19 @@ class Detections:
                         else:  # all others
                             annotator.box_label(box, label if labels else '', color=colors(cls))
                     im = annotator.im
+                    self.temp= annotator.result_base64()
+                    
             else:
                 s += '(no detections)'
 
-            im = Image.fromarray(im.astype(np.uint8)) if isinstance(im, np.ndarray) else im  # from np
-            self.im = im
+            im = Image.fromarray(im.astype(np.uint8)) if isinstance(im, np.ndarray) else im  # from np 
             if show:
                 display(im) if is_notebook() else im.show(self.files[i])
+            if save_np:
+                LOGGER.info(f"saving numpy")      
+
             if save:
-                print(f"save_dir",{save_dir})
                 f = self.files[i]
-                temp= f"{save_dir}/{f}"
-                # imshow(temp,im)
                 im.save(save_dir / f)  # save
                 if i == self.n - 1:
                     LOGGER.info(f"Saved {self.n} image{'s' * (self.n > 1)} to {colorstr('bold', save_dir)}")
@@ -1268,6 +1270,11 @@ class Detections:
         LOGGER.info(f"save :: {save_dir}")
         self._run(save=True, labels=labels, save_dir=save_dir)  # save results
 
+    def save_pil_to_base64(self):
+        self._run(save=True)
+        return self.temp
+    
+
     def crop(self, save=True, save_dir='runs/detect/exp', exist_ok=False):
         save_dir = increment_path(save_dir, exist_ok, mkdir=True) if save else None
         return self._run(crop=True, save=save, save_dir=save_dir)  # crop results
@@ -1277,23 +1284,15 @@ class Detections:
         return self.ims
 
 
-    def imgString(self):   
-        buffered = io.BytesIO()
-        self.temp.save(buffered, format='jpg')
-        img_str = base64.b64encode(buffered.getvalue())
-        print("ImgString :: ",type(img_str))
-        return img_str.decode('utf-8')
+    def imgBase64(self):   
+        self._run(save=False)
+        return self.temp
         
     with open(f'{ROOT_PATH}/nutritionValue.json', 'r') as file:
                 nutrition_data = json.load(file)
 
     nutrition_dict = {fruit['Fruit']: fruit for fruit in nutrition_data}
 
-    with open(f'{ROOT_PATH}/nutritionValue.json', 'r') as file:
-                nutrition_data = json.load(file)
-            
-            # Create a dictionary to hold the nutrition data for each fruit
-    nutrition_dict = {fruit['Fruit']: {key: value for key, value in fruit.items() if key != 'Fruit'} for fruit in nutrition_data}
 
     def to_json(self):
 

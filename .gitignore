@@ -168,3 +168,6 @@ yolov9Mod/bestmodel.pt
 yolov9/bestmodel.tflite
 yolov9/best.pt
 bestmodel.onnx
+*.pyc
+data/ddddinput.jpg
+data/dddddinputImage.jpg

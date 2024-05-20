@@ -1179,7 +1179,6 @@ def imwrite(path, im):
 
 
 def imshow(path, im):
-    print(f"Utils >> General >> imshow")
     imshow_(path.encode('unicode_escape').decode(), im)
 
 

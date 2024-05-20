@@ -15,7 +15,14 @@ import yolov9Mod
 import json
 import shutil
 import logging
+from pathlib import Path
 
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[0]
+print(f"File path :: {FILE}")
+print(f"ROOT path :: {ROOT}")
+print(f"Model path :: {Path('./yolov9Mod/bestmodel.pt')}")
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
@@ -25,7 +32,7 @@ class BaseResponse(BaseModel):
     message: Optional[str]
 
 # Load the model outside the function scope
-model = yolov9Mod.load('./yolov9Mod/bestmodel.pt', device="cpu")
+model = yolov9Mod.load(Path('./yolov9Mod/bestmodel.pt'), device="cpu")
 
 # Read the CSV file once and store it in memory
 csv_file_path = "./data/Food_Nutrition.csv"
@@ -81,6 +88,7 @@ async def predict_route(file: UploadFile = File(...)):
 
         # Perform the prediction
         results = model(image_data)
+        print(type(model))
         json_result = json.loads(results.pandas_to_json())
 
         # Check for the specific error message
@@ -99,13 +107,10 @@ async def predict_route(file: UploadFile = File(...)):
                 filtered_df[nutrient] = filtered_df[nutrient] * filtered_df["Quantity"]
 
         all_fruit_info = json.loads(filtered_df.to_json(orient="records"))
+        opencodedbase64 =  results.save_pil_to_base64() or ""
+        # opencodedbase64 = encodeImageIntoBase64("./runs/detect/exp/input.jpg")
+        result = {"detection": all_fruit_info, "image": opencodedbase64}
 
-        # Save the prediction result image
-        results.save()
-
-        # Encode the prediction result image to base64
-        opencodedbase64 = encodeImageIntoBase64("./runs/detect/exp/input.jpg")
-        result = {"detection": all_fruit_info, "image": opencodedbase64.decode('utf-8')}
 
         # Delete the runs directory
         delete_runs_directory()

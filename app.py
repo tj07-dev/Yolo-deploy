@@ -1,17 +1,19 @@
 import sys
 import os
 import platform
-
 from yoloDetection.pipeline.training_pipeline import TrainPipeline
 from yoloDetection.utils.main_utils import decodeImage, encodeImageIntoBase64
 from flask import Flask, request, jsonify, render_template,Response
 from flask_cors import CORS, cross_origin
 from yoloDetection.constant.application import APP_HOST, APP_PORT
 # from yolov9.detect import run
-from ultralytics import YOLO
 from collections import Counter
 import yolov9Mod
 import json
+import base64
+import shutil
+from PIL import Image
+from io import BytesIO
 import pandas as pd
 
 
@@ -35,7 +37,7 @@ CORS(app)
 
 class ClientApp:
     def __init__(self):
-        self.filename = "inputImage.jpg"
+        self.filename = "image0.jpg"
 
 
 
@@ -57,11 +59,11 @@ def home():
 def predictRoute():
     try:
         image = request.json['image']
-        print(type(image))
-        decodeImage(image, clApp.filename)
+        image_data =  base64_to_pil(image)
 
         # os.system("cd yolov9/ && python detect.py --weights bestmodel.pt --conf 0.3 --save-conf --save-txt --source ../data/inputImage.jpg")
-        results = model(r'./data/inputImage.jpg')
+        results = model(image_data)
+        
         json_result = json.loads(results.pandas_to_json())
         # Extract the names of the fruits from the results
         fruit_names = [fruit['name'] for fruit in json_result]
@@ -70,8 +72,6 @@ def predictRoute():
         # Convert the Counter object to a regular dictionary
         fruit_counts_dict = dict(fruit_counts)
         # Output the dictionary with the counts
-        print(fruit_counts_dict)
-        
         df = pd.read_csv(csv_file_path)
 
         filtered_df = df[df["Fruit"].isin(fruit_counts_dict.keys())].copy()
@@ -87,20 +87,14 @@ def predictRoute():
         all_fruit_info = json.loads(filtered_df.to_json(orient="records"))
 
         # Print the combined JSON response
-        print(all_fruit_info)
+        opencodedbase64 =  results.imgBase64()
+ 
 
-        image = results.save()
-        opencodedbase64 = encodeImageIntoBase64("./runs/detect/exp/inputImage.jpg")
+        # image = results.save()
+        # opencodedbase64 = encodeImageIntoBase64("./runs/detect/exp/image0.jpg")
         # result = {"image": image, "detection":all_fruit_info}
-        result = {"image": opencodedbase64.decode('utf-8'), "detection":all_fruit_info}
-        # os.system("rm -rf ./runs")
-        # os.system("rm -rf yolov9/runs")
-        if current_os == "Windows":
-            os.system("rmdir /S /Q runs")
-        elif current_os == "Linux" or current_os == "Darwin":  # Linux or macOS
-            os.system("rm -rf runs")
-        else:
-            print("Unsupported operating system.")
+        result = {"image": opencodedbase64, "detection":all_fruit_info}
+        # delete_runs_directory()
 
     except ValueError as val:
         print(val)
@@ -121,12 +115,7 @@ def predictLive():
     try:
         os.system("cd yolov9/ && python detect.py --weights my_model.pt --img 416 --conf 0.2 --source 0")
         # os.system("rm -rf yolov9/runs")
-        if current_os == "Windows":
-            os.system("rmdir /S /Q runs")
-        elif current_os == "Linux" or current_os == "Darwin":  # Linux or macOS
-            os.system("rm -rf runs")
-        else:
-            print("Unsupported operating system.")
+        delete_runs_directory()
         # os.system("del -rf yolov9/runs")
         return "Camera starting!!" 
 
@@ -139,19 +128,34 @@ def export():
     try:
         os.system("cd yolov9/ && python export.py --weights bestmodel.pt --include tflite")
         # os.system("rm -rf yolov9/runs")
-        if current_os == "Windows":
-            os.system("rmdir /S /Q runs")
-        elif current_os == "Linux" or current_os == "Darwin":  # Linux or macOS
-            os.system("rm -rf runs")
-        else:
-            print("Unsupported operating system.")
+        delete_runs_directory()
         # os.system("del -rf yolov9/runs")
         # return "Camera starting!!" 
 
     except ValueError as val:
         print(val)
         return Response("Value not found inside  json data")
-    
+
+
+def delete_runs_directory():
+    # Delete the runs directory
+    runs_path = "./runs"
+    if os.path.exists(runs_path):
+        shutil.rmtree(runs_path)
+
+def base64_to_pil(base64_string):
+    # Add padding if necessary
+    padding = 4 - len(base64_string) % 4
+    if padding:
+        base64_string += "=" * padding
+    # Decode the Base64 string
+    img_data = base64.b64decode(base64_string)
+    # Create a BytesIO object and write the decoded image data to it
+    img_buffer = BytesIO(img_data)
+    # Open the image using PIL
+    img = Image.open(img_buffer)
+    return img
+
 if __name__ == "__main__":
     clApp = ClientApp()
     app.run(host=APP_HOST, port=APP_PORT)
